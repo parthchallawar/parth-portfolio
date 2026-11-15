@@ -1,0 +1,479 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
+/* ------------------------------------------------------------------
+   Tokens — "Verified Signal"
+   Components never hardcode hex; everything reads from these.
+------------------------------------------------------------------- */
+:root,
+.dark {
+  --bg: #08090b;
+  --surface: #0f1114;
+  --surface-2: #14171b;
+  --line: #1b1e24;
+  --line-strong: #2a2e36;
+  --fg: #edeef0;
+  --muted: #8a8f98;
+  --accent: #c6f432;
+  --accent-fg: #0a0c05;
+  --glow: #7dd3fc;
+  --danger: #f87171;
+  --glass: rgb(15 17 20 / 0.62);
+  --glass-hi: rgb(255 255 255 / 0.06);
+  --grid-dot: rgb(255 255 255 / 0.035);
+  --noise-opacity: 0.05;
+  color-scheme: dark;
+}
+
+.light {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #fbfaf7;
+  --line: #e2e0da;
+  --line-strong: #cfccc4;
+  --fg: #111214;
+  --muted: #5d6068;
+  --accent: #4d7c0f;
+  --accent-fg: #f7fbef;
+  --glow: #0284c7;
+  --danger: #b91c1c;
+  --glass: rgb(255 255 255 / 0.7);
+  --glass-hi: rgb(255 255 255 / 0.9);
+  --grid-dot: rgb(0 0 0 / 0.045);
+  --noise-opacity: 0.035;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-glow: var(--glow);
+  --color-danger: var(--danger);
+  --color-glass: var(--glass);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+
+  --ease-signal: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ------------------------------------------------------------------
+   Base
+------------------------------------------------------------------- */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-padding-top: 6rem;
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* ------------------------------------------------------------------
+   Utilities
+------------------------------------------------------------------- */
+@utility container-x {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 2.5rem;
+  }
+}
+
+@utility text-display {
+  font-size: clamp(2.6rem, 8.2vw, 9rem);
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+  font-weight: 500;
+}
+
+@utility text-h2 {
+  font-size: clamp(2rem, 5vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 500;
+}
+
+@utility text-h3 {
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+}
+
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@utility hairline {
+  border-color: var(--line);
+}
+
+/* Glass: nav pill, command menu, project cards — nowhere else. */
+@utility glass {
+  background: var(--glass);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-hi),
+    0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+/* 1px gradient border via mask */
+@utility gradient-border {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      140deg,
+      color-mix(in oklab, var(--fg) 22%, transparent),
+      color-mix(in oklab, var(--fg) 4%, transparent) 40%,
+      color-mix(in oklab, var(--accent) 30%, transparent)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Background layer — pure CSS
+------------------------------------------------------------------- */
+.bg-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--bg);
+}
+.bg-field::before,
+.bg-field::after {
+  content: "";
+  position: absolute;
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 9999px;
+  filter: blur(40px);
+  will-change: transform;
+}
+.bg-field::before {
+  top: -30vmax;
+  left: -20vmax;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--glow) 11%, transparent),
+    transparent
+  );
+  animation: drift-a 48s var(--ease-signal) infinite alternate;
+}
+.bg-field::after {
+  bottom: -35vmax;
+  right: -25vmax;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--accent) 7%, transparent),
+    transparent
+  );
+  animation: drift-b 60s var(--ease-signal) infinite alternate;
+}
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 75%);
+}
+.bg-noise {
+  position: absolute;
+  inset: -50%;
+  opacity: var(--noise-opacity);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@keyframes drift-a {
+  to {
+    transform: translate3d(18vmax, 22vmax, 0) scale(1.1);
+  }
+}
+@keyframes drift-b {
+  to {
+    transform: translate3d(-20vmax, -16vmax, 0) scale(0.92);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Loader (visibility is driven by html.loading, set before paint)
+------------------------------------------------------------------- */
+.loader {
+  display: none;
+}
+html.loading .loader {
+  display: flex;
+}
+html.loading body {
+  overflow: hidden;
+}
+
+/* Hero headline: hidden before first paint only when JS will reveal it */
+html.js:not(.reduce-motion) [data-split] [data-split-inner] {
+  transform: translate3d(0, 110%, 0);
+}
+html.js [data-split][data-split-ready] [data-split-inner] {
+  transform: none;
+}
+
+/* ------------------------------------------------------------------
+   Marquee
+------------------------------------------------------------------- */
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.marquee-track {
+  animation: marquee 38s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* Status dot pulse */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.status-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--accent);
+  animation: pulse-ring 2s var(--ease-signal) infinite;
+}
+
+/* Monogram ring */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-slow {
+  animation: spin 14s linear infinite;
+}
+.spin-slower {
+  animation: spin 40s linear infinite reverse;
+}
+
+/* Scroll cue */
+@keyframes cue {
+  0% {
+    transform: translateY(-100%);
+  }
+  60%,
+  100% {
+    transform: translateY(220%);
+  }
+}
+.scroll-cue-dot {
+  animation: cue 2.2s var(--ease-signal) infinite;
+}
+
+/* Travelling dashes (experience diagram) */
+@keyframes dash-travel {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.dash-flow {
+  stroke-dasharray: 4 8;
+  animation: dash-travel 0.9s linear infinite;
+}
+
+/* Contribution grid */
+.contrib-col {
+  opacity: 0;
+}
+.contrib-on .contrib-col {
+  animation: fade-in 0.5s var(--ease-signal) forwards;
+}
+@keyframes fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Border sweep (credentials) */
+.sweep {
+  position: relative;
+  isolation: isolate;
+}
+.sweep::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--sweep-angle, 0deg),
+    transparent 0deg,
+    var(--accent) 40deg,
+    transparent 90deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-signal);
+  pointer-events: none;
+}
+.sweep:hover::after,
+.sweep:focus-within::after {
+  opacity: 1;
+  animation: sweep 2.4s linear infinite;
+}
+@property --sweep-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes sweep {
+  to {
+    --sweep-angle: 360deg;
+  }
+}
+
+/* Custom cursor: hide native only when our cursor is active */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+html.has-cursor input,
+html.has-cursor textarea {
+  cursor: text !important;
+}
+
+/* View transition for theme toggle */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* SVG visuals pause offscreen */
+.visual-paused * {
+  animation-play-state: paused !important;
+}
+
+/* ------------------------------------------------------------------
+   Reduced motion: everything settles instantly
+------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .marquee-track,
+  .bg-field::before,
+  .bg-field::after,
+  .spin-slow,
+  .spin-slower,
+  .status-dot::after,
+  .scroll-cue-dot,
+  .dash-flow {
+    animation: none !important;
+  }
+  .contrib-col {
+    opacity: 1;
+  }
+}
+
+[tabindex="-1"]:focus {
+  outline: none;
+}
