@@ -1,7 +1,16 @@
 import { profile } from "@/content/profile";
 import { education } from "@/content/credentials";
 
-export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+// On Vercel, fall back to the project's production domain when no explicit URL is set.
+const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : undefined;
+
+export const siteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  vercelUrl ??
+  "http://localhost:3000"
+).replace(/\/$/, "");
 
 export const siteTitle = `${profile.name} — ${profile.title}`;
 export const siteDescription = profile.metaDescription;
